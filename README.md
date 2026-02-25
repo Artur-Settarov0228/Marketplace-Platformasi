@@ -333,3 +333,64 @@ Quyidagi endpointlarni REST prinsiplari asosida yarating. Barcha endpointlar (re
 ---
 
 **Omad!** Agar savollar bo‘lsa, o‘qituvchingizga murojaat qiling.
+
+
+
+olx_project/
+│
+├── config/
+│   ├── __init__.py
+│   ├── asgi.py
+│   ├── wsgi.py
+│   ├── urls.py
+│   │
+│   └── settings/
+│       ├── __init__.py
+│       ├── base.py
+│       ├── dev.py
+│       └── prod.py
+│
+├── apps/
+│   ├── users/
+│   ├── sellers/
+│   ├── categories/
+│   ├── products/
+│   ├── favorites/
+│   ├── orders/
+│   └── reviews/
+│
+├── telegram_bot/
+│   ├── __init__.py
+│   ├── bot.py
+│   ├── webhook.py
+│   │
+│   ├── handlers/
+│   │   ├── __init__.py
+│   │   ├── start.py
+│   │   ├── auth.py
+│   │   ├── products.py
+│   │   ├── orders.py
+│   │   └── favorites.py
+│   │
+│   ├── keyboards/
+│   │   ├── main.py
+│   │   └── inline.py
+│   │
+│   └── services/
+│       ├── api_client.py
+│       └── token_storage.py
+│
+├── core/
+│   ├── permissions.py
+│   ├── pagination.py
+│   ├── exceptions.py
+│   └── utils.py
+│
+├── media/
+├── static/
+│
+├── requirements.txt
+├── .env
+├── .env.example
+├── manage.py
+└── README.md
