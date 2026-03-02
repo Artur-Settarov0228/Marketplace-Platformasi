@@ -1,27 +1,31 @@
-import os
-
-from dotenv import load_dotenv
 import requests
+from django.conf import settings
 
-load_dotenv()
+import core.settings as settings
 
-TOKEN = os.getenv("TOKEN")
-Getfile_Url = f"https://api.telegram.org/bot{TOKEN}/getFile"
-File_install_url = f"https://api.telegram.org/file/bot{TOKEN}"
 
-def get_image_by_id(image_id:str):
-        
-        getfile = requests.get(
-            Getfile_Url,
-            params={"file_id":image_id}
-            )
-        
-        getfile = getfile.json()
+def get_image_by_id(file_id: str) -> bytes:
+    """
+    Telegram file_id orqali rasmni yuklab beradi.
+    """
 
-        filepath = getfile['result']['file_path']
+    # 1️⃣ file info olish
+    file_url = f"https://api.telegram.org/bot{settings.BOT_TOKEN}/getFile"
+    response = requests.get(file_url, params={"file_id": file_id})
+    data = response.json()
 
-        response = requests.get(
-           f"{File_install_url}/{filepath}"
-        )
+    print("TELEGRAM FILE RESPONSE:", data)
 
-        return response.content
+    if not data.get("ok"):
+        raise Exception(f"Telegram API error: {data}")
+
+    file_path = data["result"]["file_path"]
+
+    # 2️⃣ real file yuklab olish
+    download_url = f"https://api.telegram.org/file/bot{settings.BOT_TOKEN}/{file_path}"
+    file_response = requests.get(download_url)
+
+    if file_response.status_code != 200:
+        raise Exception("Failed to download image")
+
+    return file_response.content

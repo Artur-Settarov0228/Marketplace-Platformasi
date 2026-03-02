@@ -22,6 +22,8 @@ r = redis.Redis(
     port=6379,
     decode_responses=True
 )
+
+
 class RegisterAPIView(APIView):
     permission_classes = [AllowAny]
 
@@ -31,72 +33,67 @@ class RegisterAPIView(APIView):
         if not telegram_id:
             return Response(
                 {"error": "telegram_id required"},
-                status=400
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         exists = User.objects.filter(
             telegram_id=telegram_id
         ).exists()
 
-        return Response({"status": exists})
+        return Response(
+            {"status": exists},
+            status=status.HTTP_200_OK
+        )
 
-def post(self, request):
-    serializer = UserSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
+    def post(self, request):
+        serializer = UserSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-    user, created = User.objects.get_or_create(
-        telegram_id=serializer.validated_data["telegram_id"],
-        defaults=serializer.validated_data
-    )
-
-    return Response(
-        {
-            "status": True,
-            "created": created
-        },
-        status=201
-    )
-
-class TelegramLoginView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request: Request) -> Response:
-        user_id = request.data.get("chat_id")
-        r_code = request.data.get("r_code")
-
-        if not user_id or not r_code:
-            return Response({"error": "Missing fields"}, status=400)
-
-        if len(r_code) != 6 or not r_code.isdigit():
-            return Response({"error": "Invalid code format"}, status=400)
-
-        stored_code = r.get(f"login_code:{user_id}")
-
-        if not stored_code:
-            return Response(
-                {"error": "Kod muddati o‘tgan"},
-                status=400
-            )
-
-        if stored_code != r_code:
-            return Response(
-                {"error": "Kod noto‘g‘ri"},
-                status=400
-            )
-
-        try:
-            user=User.objects.get(telegram_id=user_id)
-        except User.DoesNotExist:
-            return Response({"error": "User not found"}, status=404)
-
-        r.delete(f"login_code:{user_id}")
+        user = serializer.save()
 
         refresh = RefreshToken.for_user(user)
 
+        return Response(
+            {
+                "status": True,
+                "refresh": str(refresh),
+                "access": str(refresh.access_token),
+            },
+            status=201
+        )
+
+class TelegramLoginView(APIView):
+
+    permission_classes = [AllowAny]
+
+    def post(self, request:Request)->Response:
+        r_code = request.data.get("r_code")
+
+        if r_code is None or len(r_code) != 6 or not r_code.isdigit():
+            return Response({"code":"error"},status=status.HTTP_400_BAD_REQUEST)
+        
+        user_id = r.get(f"login_code:{r_code}")
+
+        if not user_id:
+            return Response(
+                {"error": "Kod xato yoki muddati o‘tgan"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            user = User.objects.get(chat_id = user_id)
+        except User.DoesNotExist:
+            return Response("user not found",status=400)
+        
+        r.delete(f"login_user:{user_id}")
+        r.delete(f"login_code:{r_code}")
+
+        token = RefreshToken.for_user(user)
+
         return Response({
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-        }, status=200)
+                "refresh": str(token),
+                "access": str(token.access_token),
+            },status=200)
 
 
 class LogoutView(APIView):
