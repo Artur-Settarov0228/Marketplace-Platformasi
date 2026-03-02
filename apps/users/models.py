@@ -5,32 +5,48 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
 
     class Roles(models.TextChoices):
-        CUSTOMER = 'CUSTOMER', 'Customer'
-        SELLER = 'SELLER', 'Seller'
+        CUSTOMER = "customer", "Xaridor"
+        SELLER = "seller", "Sotuvchi"
 
     telegram_id = models.BigIntegerField(
         unique=True,
-        null=True,
+        db_index=True
+    )
+
+    username = models.CharField(
+        max_length=150,
+        unique=True
+    )
+
+    first_name = models.CharField(
+        max_length=150
+    )
+
+    last_name = models.CharField(
+        max_length=150,
         blank=True
     )
 
     phone_number = models.CharField(
-        max_length=13,
-        null=True,
+        max_length=20,
         blank=True
     )
 
     role = models.CharField(
         max_length=20,
         choices=Roles.choices,
-        default=Roles.CUSTOMER
+        default=Roles.CUSTOMER,
+        db_index=True
     )
 
     avatar = models.ImageField(
-        upload_to='avatars/',
-        null=True,
-        blank=True
+        upload_to="avatars/",
+        blank=True,
+        null=True
     )
 
+    USERNAME_FIELD = "username"
+    REQUIRED_FIELDS = []
+
     def __str__(self):
-        return f"{self.username} - {self.telegram_id}"
+        return f"{self.username} ({self.role})"

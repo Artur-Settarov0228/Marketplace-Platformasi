@@ -1,6 +1,11 @@
 from django.urls import path
-from .views import telegram_login
+from rest_framework_simplejwt.views import TokenRefreshView
+from .views import RegisterAPIView, UserProfileView, TelegramLoginView, LogoutView
 
 urlpatterns = [
-    path("auth/telegram-login/", telegram_login, name="telegram_login"),
+    path("auth/register/", RegisterAPIView.as_view(), name="register"),
+    path("auth/telegram-login/", TelegramLoginView.as_view(), name="telegram-login"),
+    path("auth/refresh/", TokenRefreshView.as_view(), name="refresh"),
+    path("auth/logout/", LogoutView.as_view(), name="logout"),
+    path("users/me/", UserProfileView.as_view(), name="profile"),
 ]
