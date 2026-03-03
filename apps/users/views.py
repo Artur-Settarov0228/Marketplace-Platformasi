@@ -11,6 +11,8 @@ from .serializers import UserSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework import status
+from rest_framework_simplejwt.exceptions import TokenError
+
 
 from django.db import transaction
 
@@ -105,40 +107,52 @@ class TelegramLoginView(APIView):
             "access": str(refresh.access_token),
         })
     
-    
-class LogoutView(APIView):
 
+
+class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        refresh_token = request.data.get("refresh")
+
+        if not refresh_token:
+            return Response(
+                {"error": "Refresh token required"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
-            refresh_token = request.data.get("refresh")
             token = RefreshToken(refresh_token)
             token.blacklist()
-            return Response({"detail": "Logged out"}, status=200)
-        except Exception:
-            return Response({"error": "Invalid token"}, status=400)
+        except TokenError:
+            return Response(
+                {"error": "Invalid or expired token"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
-
+        return Response(
+            {"message": "Successfully logged out"},
+            status=status.HTTP_200_OK
+        )
 
 class UserProfileView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
 
+    def get(self, request: Request) -> Response:
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
 
-    def get(self, request:Request)->Response:
-        return Response(UserSerializer(request.user).data)
-    
-    def patch(self, request:Request)->Response:
+    def patch(self, request: Request) -> Response:
         user = request.user
 
-        serializers = UserUpdateSerializer(data = request.data,partial = True)
+        serializer = UserUpdateSerializer(
+            instance=user,
+            data=request.data,
+            partial=True
+        )
 
-        if serializers.is_valid(raise_exception=True):
-            update_user = serializers.update(user,request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-            return Response(UserSerializer(update_user).data)
-       
+        return Response(UserSerializer(user).data)
