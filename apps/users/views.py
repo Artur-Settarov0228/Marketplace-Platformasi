@@ -12,6 +12,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.views import APIView
 from rest_framework import status
 
+from django.db import transaction
+
+
 from .serializers import UserUpdateSerializer
 
 
@@ -62,40 +65,47 @@ class RegisterAPIView(APIView):
             status=201
         )
 
-class TelegramLoginView(APIView):
 
+class TelegramLoginView(APIView):
     permission_classes = [AllowAny]
 
-    def post(self, request:Request)->Response:
-        r_code = request.data.get("r_code")
+    def post(self, request):
+        code = request.data.get("code")
 
-        if r_code is None or len(r_code) != 6 or not r_code.isdigit():
-            return Response({"code":"error"},status=status.HTTP_400_BAD_REQUEST)
-        
-        user_id = r.get(f"login_code:{r_code}")
+        if not isinstance(code, str) or not code.isdigit() or len(code) != 6:
+            return Response(
+                {"error": "Invalid code format"},
+                status=400
+            )
+
+        redis_key = f"login_code:{code}"
+        user_id = r.get(redis_key)
 
         if not user_id:
             return Response(
                 {"error": "Kod xato yoki muddati o‘tgan"},
-                status=status.HTTP_400_BAD_REQUEST
+                status=400
             )
-        
-        try:
-            user = User.objects.get(chat_id = user_id)
-        except User.DoesNotExist:
-            return Response("user not found",status=400)
-        
-        r.delete(f"login_user:{user_id}")
-        r.delete(f"login_code:{r_code}")
 
-        token = RefreshToken.for_user(user)
+        try:
+            user = User.objects.get(telegram_id=int(user_id))
+        except User.DoesNotExist:
+            return Response(
+                {"error": "User not found"},
+                status=404
+            )
+
+        r.delete(redis_key)
+        r.delete(f"login_user:{user_id}")
+
+        refresh = RefreshToken.for_user(user)
 
         return Response({
-                "refresh": str(token),
-                "access": str(token.access_token),
-            },status=200)
-
-
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        })
+    
+    
 class LogoutView(APIView):
 
     permission_classes = [IsAuthenticated]

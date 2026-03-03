@@ -7,5 +7,4 @@ urlpatterns = [
     path("auth/telegram-login/", TelegramLoginView.as_view(), name="telegram-login"),
     path("auth/refresh/", TokenRefreshView.as_view(), name="refresh"),
     path("auth/logout/", LogoutView.as_view(), name="logout"),
-    path("users/me/", UserProfileView.as_view(), name="profile"),
 ]
