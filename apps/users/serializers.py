@@ -3,6 +3,8 @@ from django.db import transaction
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
+from apps.sellers.models import SellerProfile
+
 from .services import get_image_by_id
 
 User = get_user_model()
@@ -73,3 +75,32 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         return super().update(instance, validated_data)
 
 
+class UpgradeToSellerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SellerProfile
+        fields = [
+            "shop_name",
+            "shop_description",
+            "shop_logo",
+            "region",
+            "district"
+        ]
+    
+    def validate(self, attrs):
+        user = self.context['request'].user
+
+        if user.role == 'seller':
+            raise serializers.ValidationError("User is already a seller.")
+        
+        if hasattr(user, 'seller_profile'):
+            raise serializers.ValidationError("User already has a seller profile.")
+        
+        return attrs
+    
+    def create(self, validated_data):
+        user = self.context['request'].user
+        seller_profile = SellerProfile.objects.create(user=user, **validated_data)
+        user.role = User.Roles.SELLER
+        user.save(update_fields=['role'])
+        return seller_profile
+    

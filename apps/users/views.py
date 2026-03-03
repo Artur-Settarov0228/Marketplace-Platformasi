@@ -13,6 +13,8 @@ from rest_framework.views import APIView
 from rest_framework import status
 from rest_framework_simplejwt.exceptions import TokenError
 
+from apps.users.serializers import UpgradeToSellerSerializer
+
 
 from django.db import transaction
 
@@ -156,3 +158,14 @@ class UserProfileView(APIView):
         serializer.save()
 
         return Response(UserSerializer(user).data)
+    
+class UpgradeToSellerView(APIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
+
+    def post(self, request:Request):
+        serializers = UpgradeToSellerSerializer(data = request.data, context = {"request": request})
+        serializers.is_valid(raise_exception=True)
+        seller_profile = serializers.save()
+
+        return Response({"message":"Siz endi sotuvchisiz", "shop_name":seller_profile.shop_name})
