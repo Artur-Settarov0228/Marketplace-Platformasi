@@ -21,7 +21,7 @@ class SellerDetailView(APIView):
     def get(self, request, seller_id):
         seller = SellerProfile.objects.filter(id=seller_id).first()
         if not seller:
-            return Response({"detail": "Seller not found"}, status=404)
+            return Response({"detail": "Seller topilmadi "}, status=404)
 
         serializer = SellerProfileSerializer(seller)
         return Response(serializer.data)

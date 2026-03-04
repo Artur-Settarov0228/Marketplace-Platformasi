@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.products.models import Product
+from apps.products.models import Product, ProductImage
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,3 +14,9 @@ class ProductSerializer(serializers.ModelSerializer):
             "updated_at",
             "published_at"
         ]
+
+class ProductImageSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ProductImage
+        fields = ["id", "image", "is_main"]
