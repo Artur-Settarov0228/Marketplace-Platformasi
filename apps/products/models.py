@@ -1,33 +1,60 @@
 from django.db import models
-from django.conf import settings
+from apps.users.models import User
+from apps.categories.models import Category
 
 
 class Product(models.Model):
 
+    class Condition(models.TextChoices):
+        NEW = "new", "Yangi"
+        IDEAL = "ideal", "Ideal"
+        GOOD = "good", "Yaxshi"
+        FAIR = "fair", "Qoniqarli"
+
+
+    class PriceType(models.TextChoices):
+        FIXED = "fixed", "Qat'iy"
+        NEGOTIABLE = "negotiable", "Kelishiladi"
+        FREE = "free", "Bepul"
+        EXCHANGE = "exchange", "Ayirboshlash"
+
+
     class Status(models.TextChoices):
-        MODERATION = 'MODERATION', 'Moderation'
-        ACTIVE = 'ACTIVE', 'Active'
-        SOLD = 'SOLD', 'Sold'
-        ARCHIVED = 'ARCHIVED', 'Archived'
+        MODERATION = "moderation", "Moderatsiyada"
+        ACTIVE = "active", "Aktiv"
+        REJECTED = "rejected", "Rad etilgan"
+        SOLD = "sold", "Sotilgan"
+        ARCHIVED = "archived", "Arxivlangan"
+
 
     seller = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+        User,
         on_delete=models.CASCADE,
-        related_name='products'
+        related_name="products"
     )
 
     category = models.ForeignKey(
-        'categories.Category',
-        on_delete=models.PROTECT,
-        related_name='products'
+        Category,
+        on_delete=models.CASCADE
     )
 
     title = models.CharField(max_length=200)
     description = models.TextField()
 
-    price = models.DecimalField(max_digits=12, decimal_places=2, db_index=True)
+    condition = models.CharField(
+        max_length=20,
+        choices=Condition.choices
+    )
 
-    region = models.CharField(max_length=100, db_index=True)
+    price = models.DecimalField(max_digits=12, decimal_places=2)
+
+    price_type = models.CharField(
+        max_length=20,
+        choices=PriceType.choices
+    )
+
+    region = models.CharField(max_length=100)
+    district = models.CharField(max_length=100)
 
     view_count = models.PositiveIntegerField(default=0)
     favorite_count = models.PositiveIntegerField(default=0)
@@ -35,18 +62,14 @@ class Product(models.Model):
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
-        default=Status.MODERATION,
-        db_index=True
+        default=Status.MODERATION
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        indexes = [
-            models.Index(fields=['status']),
-            models.Index(fields=['price']),
-            models.Index(fields=['created_at']),
-        ]
+    published_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField()
 
     def __str__(self):
         return self.title
