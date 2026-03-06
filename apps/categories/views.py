@@ -14,10 +14,7 @@ class CategoryListView(ListAPIView):
 
     permission_classes = [AllowAny]
     serializer_class = CategorySerializer
-    queryset = Category.objects.filter(
-        parent=None,
-        is_active=True
-    )
+    queryset = Category.objects.filter( parent=None, is_active=True)
 
 
 
@@ -28,9 +25,6 @@ class CategoryDetailView(RetrieveAPIView):
     lookup_field = "slug"
     queryset = Category.objects.filter(is_active=True)
 
-
-from products.models import Product
-from products.serializers import ProductSerializer
 
 
 class CategoryProductsView(ListAPIView):

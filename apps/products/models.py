@@ -56,12 +56,10 @@ class Product(models.Model):
     
 class ProductImage(models.Model):
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images"
-    )
-
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="images")
     image = models.ImageField(upload_to="products/")
     is_main = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return f"Image for {self.product.title}"
+        return f"Rasm uchun {self.product.title}"

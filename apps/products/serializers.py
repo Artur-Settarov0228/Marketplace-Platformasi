@@ -20,3 +20,57 @@ class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
         fields = ["id", "image", "is_main"]
+        
+
+class ProductCreateSerializer(serializers.ModelSerializer):
+
+    images = ProductImageSerializer(
+        many=True,
+        write_only=True,
+        required=False
+    )
+
+    class Meta:
+        model = Product
+        fields = [
+            "id",
+            "title",
+            "description",
+            "price",
+            "category",
+            "images"
+        ]
+
+
+    def create(self, validated_data):
+        images_data = validated_data.pop("images", [])
+        request = self.context.get("request")
+        product = Product.objects.create(
+            seller=request.user,
+            **validated_data
+        )
+
+        for image_data in images_data:
+
+            ProductImage.objects.create(
+                product=product,
+                **image_data
+            )
+
+        return product
+    
+class ProductUpdateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Product
+        fields = [
+            "title",
+            "description",
+            "price",
+            "category",
+            "condition",
+            "price_type",
+            "region",
+            "district",
+            "expires_at",
+        ]
