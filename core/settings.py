@@ -18,7 +18,6 @@ load_dotenv(BASE_DIR / ".env")
 # =========================
 
 SECRET_KEY = os.getenv("SECRET_KEY")
-BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
