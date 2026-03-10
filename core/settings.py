@@ -1,7 +1,3 @@
-"""
-Django settings for core project.
-"""
-
 from pathlib import Path
 from dotenv import load_dotenv
 import os
@@ -13,10 +9,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
 
-# =========================
-# SECURITY
-# =========================
-
 SECRET_KEY = os.getenv("SECRET_KEY")
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -26,9 +18,6 @@ DEBUG = os.getenv("DEBUG", "False") == "True"
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
 
 
-# =========================
-# APPLICATIONS
-# =========================
 
 INSTALLED_APPS = [
     # Django
@@ -57,10 +46,6 @@ INSTALLED_APPS = [
 
 
 
-# =========================
-# MIDDLEWARE
-# =========================
-
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -77,9 +62,6 @@ ROOT_URLCONF = "core.urls"
 WSGI_APPLICATION = "core.wsgi.application"
 
 
-# =========================
-# DATABASE
-# =========================
 
 DATABASES = {
     "default": {
@@ -93,9 +75,6 @@ DATABASES = {
 }
 
 
-# =========================
-# TEMPLATES
-# =========================
 
 TEMPLATES = [
     {
@@ -113,10 +92,6 @@ TEMPLATES = [
 ]
 
 
-# =========================
-# PASSWORD VALIDATION
-# =========================
-
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
@@ -125,9 +100,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# =========================
-# INTERNATIONALIZATION
-# =========================
 
 LANGUAGE_CODE = "uz"
 
@@ -137,20 +109,12 @@ USE_I18N = True
 USE_TZ = True
 
 
-# =========================
-# STATIC & MEDIA
-# =========================
-
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
-
-# =========================
-# DRF CONFIG
-# =========================
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -166,10 +130,6 @@ REST_FRAMEWORK = {
 }
 
 
-# =========================
-# JWT CONFIG
-# =========================
-
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
@@ -179,9 +139,6 @@ SIMPLE_JWT = {
 }
 
 
-# =========================
-# SWAGGER
-# =========================
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "OLX Marketplace API",
