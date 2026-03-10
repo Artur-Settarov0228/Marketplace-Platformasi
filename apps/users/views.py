@@ -106,52 +106,53 @@ class RegisterAPIView(APIView):
 class TelegramLoginView(APIView):
     """
     Telegram orqali login qilish API.
-
-    Telegram bot orqali yuborilgan 6 xonali kod
-    Redis orqali tekshiriladi va foydalanuvchi tizimga kiradi.
     """
 
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """
-        Login kodini tekshiradi va JWT token beradi.
-
-        Request body:
-            code (6 xonali kod)
-
-        Response:
-            refresh va access token
-        """
 
         code = request.data.get("code")
 
+        #  Kod validatsiya
         if not isinstance(code, str) or not code.isdigit() or len(code) != 6:
             return Response(
                 {"error": "Kod formati noto'g'ri"},
-                status=400
+                status=status.HTTP_400_BAD_REQUEST
             )
 
         redis_key = f"login_code:{code}"
-        user_id = r.get(redis_key)
 
+        # Redisdan olish
+        try:
+            user_id = r.get(redis_key)
+        except redis.RedisError:
+            return Response(
+                {"error": "Redis bilan ulanishda xato"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+        #  Kod topilmadi
         if not user_id:
             return Response(
                 {"error": "Kod noto'g'ri yoki muddati tugagan"},
-                status=400
+                status=status.HTTP_400_BAD_REQUEST
             )
 
+        #  Foydalanuvchini topish
         try:
             user = User.objects.get(telegram_id=int(user_id))
         except User.DoesNotExist:
             return Response(
                 {"error": "Foydalanuvchi topilmadi"},
-                status=404
+                status=status.HTTP_404_NOT_FOUND
             )
 
+        # 5️⃣ Redisdagi kodni o‘chirish
         r.delete(redis_key)
         r.delete(f"login_user:{user_id}")
 
+        # 6️⃣ JWT token yaratish
         refresh = RefreshToken.for_user(user)
 
         return Response({
@@ -159,7 +160,6 @@ class TelegramLoginView(APIView):
             "refresh": str(refresh),
             "access": str(refresh.access_token),
         })
-
 
 class LogoutView(APIView):
     """
