@@ -1,5 +1,8 @@
 from rest_framework import serializers
 from apps.products.models import Product, ProductImage
+from django.utils import timezone
+from datetime import timedelta
+
 
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
@@ -42,16 +45,16 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         ]
 
 
+
     def create(self, validated_data):
         images_data = validated_data.pop("images", [])
-        request = self.context.get("request")
+
         product = Product.objects.create(
-            seller=request.user,
+            expires_at=timezone.now() + timedelta(days=30),
             **validated_data
         )
 
         for image_data in images_data:
-
             ProductImage.objects.create(
                 product=product,
                 **image_data
