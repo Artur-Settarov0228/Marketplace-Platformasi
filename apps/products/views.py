@@ -16,7 +16,7 @@ from apps.products.serializers import (
     ProductCreateSerializer,
     ProductUpdateSerializer
 )
-from apps.products.permissions import IsProductOwner
+from apps.products.permissions import IsSeller
 
 
 class ProductListView(ListAPIView):
@@ -129,7 +129,7 @@ class ProductUpdateView(UpdateAPIView):
 
     queryset = Product.objects.all()
     serializer_class = ProductUpdateSerializer
-    permission_classes = [IsAuthenticated, IsProductOwner]
+    permission_classes = [IsAuthenticated, IsSellerPermission]
 
 
 class ProductDeleteView(DestroyAPIView):
@@ -141,7 +141,7 @@ class ProductDeleteView(DestroyAPIView):
     """
 
     queryset = Product.objects.all()
-    permission_classes = [IsAuthenticated, IsProductOwner]
+    permission_classes = [IsAuthenticated, IsSellerPermission]
 
     def perform_destroy(self, instance):
         """
