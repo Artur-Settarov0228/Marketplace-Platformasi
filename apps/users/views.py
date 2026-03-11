@@ -148,11 +148,11 @@ class TelegramLoginView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # 5️⃣ Redisdagi kodni o‘chirish
+        #  Redisdagi kodni o‘chirish
         r.delete(redis_key)
         r.delete(f"login_user:{user_id}")
 
-        # 6️⃣ JWT token yaratish
+        #  JWT token yaratish
         refresh = RefreshToken.for_user(user)
 
         return Response({
