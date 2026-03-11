@@ -82,13 +82,19 @@ class UserSerializer(serializers.ModelSerializer):
 
         # Agar avatar yuborilgan bo'lsa Telegramdan yuklab olish
         if file_id:
-            image_bytes = get_image_by_id(file_id)
+            try:
+                image_bytes = get_image_by_id(file_id)
 
-            user.avatar.save(
-                f"{telegram_id}.jpg",
-                ContentFile(image_bytes),
-                save=True
-            )
+                if image_bytes:
+                    user.avatar.save(
+                        f"{telegram_id}.jpg",
+                        ContentFile(image_bytes),
+                        save=True
+                    )
+
+            except Exception as e:
+                # server crash bo‘lmasligi uchun
+                print("Avatar yuklashda xato:", e)
 
         return user
     
